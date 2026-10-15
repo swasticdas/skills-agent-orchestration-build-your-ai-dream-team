@@ -1,0 +1,36 @@
+{
+  "projects": [
+    {
+      "name": "Community Launch",
+      "owner": "Ava Patel",
+      "status": "On track",
+      "recentActivity": "Partner preview is ready; feedback review is scheduled for Thursday.",
+      "priority": "High priority",
+      "summary": "Prepare the new community experience for a smooth, welcoming launch."
+    },
+    {
+      "name": "Insights Refresh",
+      "owner": "Marcus Lee",
+      "status": "In progress",
+      "recentActivity": "The updated reporting view is in review with the research team.",
+      "priority": "Medium priority",
+      "summary": "Make project health and progress easier for contributors to understand."
+    },
+    {
+      "name": "Contributor Onboarding",
+      "owner": "Sofia Nguyen",
+      "status": "Needs attention",
+      "recentActivity": "A dependency on the updated welcome guide may shift the pilot date.",
+      "priority": "At risk",
+      "summary": "Help new contributors find their first task and get productive faster."
+    },
+    {
+      "name": "Accessibility Tune-up",
+      "owner": "Noah Williams",
+      "status": "In progress",
+      "recentActivity": "Keyboard and contrast checks are underway across key screens.",
+      "priority": "High priority",
+      "summary": "Improve the experience for everyone with focused accessibility fixes."
+    }
+  ]
+}

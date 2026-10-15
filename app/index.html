@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f7fb">
+    <meta name="description" content="A clear, at-a-glance view of Mona's team projects, ownership, status, and priorities.">
+    <title>Project Pulse</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="dashboard">
+      <header class="dashboard-header">
+        <div class="heading-group">
+          <p class="eyebrow"><span class="pulse-dot" aria-hidden="true"></span> MONA'S TEAM OVERVIEW</p>
+          <h1>Project Pulse</h1>
+          <p class="intro">A clear view of what's moving, who's leading, and where the team needs to focus.</p>
+        </div>
+        <div class="updated-note" aria-label="Dashboard data source">
+          <span class="updated-icon" aria-hidden="true">↗</span>
+          <span>Team workspace<br><strong>Project overview</strong></span>
+        </div>
+      </header>
+
+      <section class="overview" aria-label="Project overview">
+        <div class="overview-copy">
+          <h2>All projects</h2>
+          <p>Track progress and spot the next priority.</p>
+        </div>
+        <p class="project-count" id="project-count" aria-live="polite">Loading projects…</p>
+      </section>
+
+      <section class="project-grid" id="project-list" aria-label="Projects" aria-live="polite" aria-busy="true">
+        <p class="message-card">Loading project updates…</p>
+      </section>
+      <p class="load-error" id="load-error" role="alert" hidden></p>
+    </main>
+
+    <script>
+      const projectList = document.querySelector("#project-list");
+      const projectCount = document.querySelector("#project-count");
+      const loadError = document.querySelector("#load-error");
+
+      function makeTextElement(tagName, className, text) {
+        const element = document.createElement(tagName);
+        element.className = className;
+        element.textContent = text;
+        return element;
+      }
+
+      function slug(value) {
+        return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      }
+
+      function createProjectCard(project) {
+        const card = document.createElement("article");
+        card.className = "project-card";
+
+        const cardHeader = document.createElement("div");
+        cardHeader.className = "card-header";
+        cardHeader.append(
+          makeTextElement("h3", "project-name", project.name),
+          makeTextElement("span", `priority-badge priority-${slug(project.priority)}`, project.priority)
+        );
+
+        const summary = makeTextElement("p", "project-summary", project.summary);
+
+        const meta = document.createElement("div");
+        meta.className = "card-meta";
+        const owner = document.createElement("p");
+        owner.className = "owner";
+        owner.append(makeTextElement("span", "meta-label", "OWNER"));
+        owner.append(makeTextElement("span", "owner-name", project.owner));
+
+        const status = document.createElement("p");
+        status.className = "status-row";
+        status.append(makeTextElement("span", "meta-label", "STATUS"));
+        status.append(makeTextElement("span", `status-badge status-${slug(project.status)}`, project.status));
+        meta.append(owner, status);
+
+        const activity = document.createElement("div");
+        activity.className = "activity";
+        activity.append(
+          makeTextElement("span", "meta-label", "RECENT ACTIVITY"),
+          makeTextElement("p", "activity-text", project.recentActivity)
+        );
+
+        card.append(cardHeader, summary, meta, activity);
+        return card;
+      }
+
+      function renderProjects(projects) {
+        projectList.replaceChildren();
+        projectList.setAttribute("aria-busy", "false");
+        projectCount.textContent = `${projects.length} ${projects.length === 1 ? "project" : "projects"}`;
+
+        if (projects.length === 0) {
+          projectList.append(makeTextElement("p", "message-card", "No projects to show yet. Check back when the team adds its first update."));
+          return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        projects.forEach((project) => fragment.append(createProjectCard(project)));
+        projectList.append(fragment);
+      }
+
+      async function loadProjects() {
+        try {
+          const response = await fetch("project-data.json");
+          if (!response.ok) {
+            throw new Error(`Project data request failed with status ${response.status}.`);
+          }
+          const data = await response.json();
+          if (!data || !Array.isArray(data.projects)) {
+            throw new Error("Project data must include a projects array.");
+          }
+
+          const requiredFields = ["name", "owner", "status", "recentActivity", "priority", "summary"];
+          data.projects.forEach((project, index) => {
+            if (!project || requiredFields.some((field) => typeof project[field] !== "string" || !project[field].trim())) {
+              throw new Error(`Project entry ${index + 1} is missing a required text field.`);
+            }
+          });
+
+          renderProjects(data.projects);
+        } catch (error) {
+          projectList.replaceChildren();
+          projectList.setAttribute("aria-busy", "false");
+          projectCount.textContent = "Projects unavailable";
+          loadError.hidden = false;
+          loadError.textContent = `We couldn't load the project updates. ${error.message}`;
+        }
+      }
+
+      loadProjects();
+    </script>
+  </body>
+</html>
